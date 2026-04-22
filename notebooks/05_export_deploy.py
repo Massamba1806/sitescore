@@ -15,8 +15,10 @@ df = pd.read_sql("""
            type_iris, centroid_lon, centroid_lat,
            sitescore, score_concurrence, score_revenu,
            score_densite, score_accessibilite, score_potentiel,
+           score_foncier,
            nb_concurrents_500m, nb_concurrents_1km, nb_concurrents_2km,
-           revenu_median, densite_pop, pop_totale, potentiel_ca
+           revenu_median, densite_pop, pop_totale, potentiel_ca,
+           prix_m2_median, prix_m2_moyen, nb_transactions
     FROM raw_data.iris
     WHERE type_iris = 'H'
     AND sitescore > 0
@@ -29,3 +31,4 @@ os.makedirs("data/exports", exist_ok=True)
 df.to_csv("data/exports/sitescore_idf.csv", index=False)
 print(f"✅ {len(df)} IRIS exportés → data/exports/sitescore_idf.csv")
 print(f"   Taille : {os.path.getsize('data/exports/sitescore_idf.csv')/1e6:.1f} Mo")
+print(f"   Colonnes : {list(df.columns)}")
