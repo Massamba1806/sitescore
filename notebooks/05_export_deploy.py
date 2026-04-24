@@ -18,7 +18,9 @@ df = pd.read_sql("""
            score_foncier,
            nb_concurrents_500m, nb_concurrents_1km, nb_concurrents_2km,
            revenu_median, densite_pop, pop_totale, potentiel_ca,
-           prix_m2_median, prix_m2_moyen, nb_transactions
+           prix_m2_median, prix_m2_moyen, nb_transactions,
+ca_potentiel_an, ca_potentiel_m2, part_marche_pct,
+ca_potentiel_an, ca_potentiel_m2, part_marche_pct
     FROM raw_data.iris
     WHERE type_iris = 'H'
     AND sitescore > 0

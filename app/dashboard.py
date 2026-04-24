@@ -652,7 +652,7 @@ kpis = [
     (k2, f"{top1['sitescore']:.0f}",   "SiteScore",      "Règles expertes",   "#2E6DA4"),
     (k3, f"{top1['rf_score']:.0f}",    "RF Score",       "Machine learning",  "#3B82F6"),
     (k4, str(int(top1['nb_concurrents_1km'])), "Concurrents", "dans 1km rayon", "#DC2626"),
-    (k5, f"{int(top1['prix_m2_median']):,}€", "Prix m² DVF", "médian 2024",    "#7C3AED"),
+    (k5, f"{int(top1.get('ca_potentiel_an', 0)/1e6*10)/10:.1f}M€", "CA Potentiel", "estimé/an zone 1", "#7C3AED"),
 ]
 for col, val, lbl, sub, color in kpis:
     with col:
@@ -698,7 +698,8 @@ with left:
                             </span>
                             <span class="pill" style="background:#7C3AED18;
                                 color:#7C3AED;border:1px solid #7C3AED33;">
-                                🏠 {int(row['prix_m2_median']):,}€/m²
+                                f"🏠 {int(row['prix_m2_median']):,}€/m²",
+f"💵 CA: {int(row.get('ca_potentiel_an',0)/1000):.0f}k€/an",
                             </span>
                         </div>
                     </div>
