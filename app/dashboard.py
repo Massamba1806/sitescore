@@ -394,7 +394,7 @@ if mode == "🗺️ Déserts commerciaux IDF":
         (df_map["categorie"]=="standard"), "categorie"] = "opportunite_moyenne"
 
     cat_config = {
-        "desert":             {"color":"#DC2626", "size":16, "label":"🔴 Désert commercial"},
+        "desert":             {"color":"#DC2626", "size":16, "label":"Désert commercial"},
         "opportunite_forte":  {"color":"#F59E0B", "size":12, "label":"🟡 Opportunité forte"},
         "opportunite_moyenne":{"color":"#3B82F6", "size":8,  "label":"🔵 Opportunité moyenne"},
     }
