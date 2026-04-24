@@ -397,6 +397,139 @@ if mode == "📊 Comparer plusieurs communes" and communes_comp:
         st.warning("Aucun résultat.")
         st.stop()
 
+    # ── Graphiques sans Folium ────────────────
+    c1, c2 = st.columns([3,2])
+
+    with c1:
+        st.markdown('<div class="sec">RADAR MULTI-CRITÈRES</div>',
+                    unsafe_allow_html=True)
+        cats    = ["Score Final","SiteScore","RF Score",
+                   "Concurrence","Revenu","Foncier"]
+        metrics = ["score_final","sitescore","rf_score",
+                   "score_concurrence","score_revenu","score_foncier"]
+        colors  = ["#1A3557","#2E6DA4","#3B82F6",
+                   "#60A5FA","#93C5FD","#BFDBFE"]
+
+        fig = go.Figure()
+        for i, (_, row) in enumerate(df_comp.iterrows()):
+            vals = [float(row.get(m, 0)) for m in metrics]
+            c    = colors[i % len(colors)]
+            r,g,b = int(c[1:3],16), int(c[3:5],16), int(c[5:7],16)
+            fig.add_trace(go.Scatterpolar(
+                r=vals+[vals[0]],
+                theta=cats+[cats[0]],
+                fill="toself",
+                name=str(row["commune"]),
+                line=dict(color=c, width=2),
+                fillcolor=f"rgba({r},{g},{b},0.12)",
+            ))
+        fig.update_layout(
+            polar=dict(
+                bgcolor="white",
+                radialaxis=dict(
+                    visible=True, range=[0,100],
+                    gridcolor="#E5E7EB",
+                    tickfont=dict(color="#9CA3AF", size=9)
+                ),
+                angularaxis=dict(
+                    gridcolor="#E5E7EB",
+                    tickfont=dict(color="#374151", size=10)
+                )
+            ),
+            paper_bgcolor="#F0F4F8",
+            showlegend=True,
+            legend=dict(font=dict(color="#374151", size=10)),
+            margin=dict(l=40,r=40,t=40,b=40),
+            height=420,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with c2:
+        st.markdown('<div class="sec">CLASSEMENT COMPARATIF</div>',
+                    unsafe_allow_html=True)
+        df_sorted = df_comp.sort_values("score_final", ascending=False)
+        for i, (_, row) in enumerate(df_sorted.iterrows()):
+            color = RANK_COLORS[min(i, len(RANK_COLORS)-1)]
+            st.markdown(f"""
+                <div class="rcard" style="--rc:{color};">
+                    <div style="display:flex;justify-content:space-between;
+                                align-items:center;">
+                        <div>
+                            <div class="rcard-rank">#{i+1}</div>
+                            <div class="rcard-name">{row['commune']}</div>
+                            <div class="rcard-commune">
+                                {row['nom_iris']} · Dept {row['dept']}
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="rcard-score">{row['score_final']:.0f}</div>
+                            <div style="font-size:10px;color:#9CA3AF;">/100</div>
+                        </div>
+                    </div>
+                    <div class="bar-bg">
+                        <div class="bar-fill" style="width:{row['score_final']}%;"></div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    # ── Carte Plotly ──────────────────────────
+    st.markdown('<div class="sec" style="margin-top:24px;">CARTE DES COMMUNES COMPARÉES</div>',
+                unsafe_allow_html=True)
+
+    fig_map = go.Figure()
+    for i, (_, row) in enumerate(df_comp.iterrows()):
+        color = RANK_COLORS[min(i, len(RANK_COLORS)-1)]
+        fig_map.add_trace(go.Scattermapbox(
+            lat=[row["centroid_lat"]],
+            lon=[row["centroid_lon"]],
+            mode="markers+text",
+            marker=dict(size=18, color=color),
+            text=[f"#{i+1} {row['commune']}"],
+            textposition="top center",
+            textfont=dict(size=11, color=color),
+            name=str(row["commune"]),
+            hovertemplate=(
+                f"<b>{row['commune']}</b><br>"
+                f"Score : {row['score_final']:.0f}/100<br>"
+                f"Concurrents : {row['nb_concurrents_1km']}<br>"
+                f"Revenu : {int(row['revenu_median']):,}€<extra></extra>"
+            )
+        ))
+
+    center_lat = df_comp["centroid_lat"].mean()
+    center_lon = df_comp["centroid_lon"].mean()
+
+    fig_map.update_layout(
+        mapbox=dict(
+            style="carto-positron",
+            center=dict(lat=center_lat, lon=center_lon),
+            zoom=9
+        ),
+        paper_bgcolor="#F0F4F8",
+        margin=dict(l=0,r=0,t=0,b=0),
+        height=350,
+        showlegend=False,
+    )
+    st.plotly_chart(fig_map, use_container_width=True)
+
+    # ── Tableau ───────────────────────────────
+    st.markdown('<div class="sec" style="margin-top:16px;">TABLEAU COMPARATIF DÉTAILLÉ</div>',
+                unsafe_allow_html=True)
+    cols_ok = [c for c in ["commune","nom_iris","score_final","sitescore",
+                            "rf_score","nb_concurrents_1km",
+                            "revenu_median","prix_m2_median"]
+               if c in df_comp.columns]
+    st.dataframe(
+        df_comp[cols_ok].rename(columns={
+            "commune":"Commune","nom_iris":"Meilleur IRIS",
+            "score_final":"Score Final","sitescore":"SiteScore",
+            "rf_score":"RF Score","nb_concurrents_1km":"Conc. 1km",
+            "revenu_median":"Revenu €","prix_m2_median":"Prix m²",
+        }),
+        use_container_width=True, hide_index=True,
+    )
+    st.stop()
+
     # Radar
     c1, c2 = st.columns([3,2])
     with c1:
